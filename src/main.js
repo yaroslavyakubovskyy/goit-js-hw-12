@@ -14,6 +14,7 @@ const itemsPerPage = 15;
 let totalPages;
 let currentPage;
 let q;
+let elemHeight;
 
 refs.loader.style.display = 'none';
 
@@ -32,6 +33,7 @@ const onSearchFormSubmit = async event => {
     currentPage = 1;
     refs.gallery.innerHTML = '';
     showLoader();
+    refs.btnLoadMore.classList.remove('is-visible');
 
     q = event.currentTarget.elements.search_text.value.trim();
 
@@ -75,15 +77,9 @@ const onSearchFormSubmit = async event => {
 
     refs.btnLoadMore.classList.add('is-visible');
 
-    const elemHeight = document
+    elemHeight = document
       .querySelector('.gallery-wrapper')
       .getBoundingClientRect().height;
-
-    window.scrollBy({
-      top: elemHeight * 2, // Scroll down by 2 times the element height
-      left: 0,
-      behavior: 'smooth', // Smooth scrolling
-    });
   } catch (error) {
     iziToast.error({ title: 'Error', message: error.message });
     hideLoader();
@@ -94,13 +90,20 @@ refs.searchForm.addEventListener('submit', onSearchFormSubmit);
 
 refs.btnLoadMore.addEventListener('click', async () => {
   try {
+    showLoader();
     const {
       data: { totalHits, hits: images },
     } = await fetchPhotosByQuery(q, currentPage);
 
-    hideLoader();
+    // hideLoader();
     refs.gallery.insertAdjacentHTML('beforeend', galleryCardsTemplate(images));
     createLightBox();
+
+    window.scrollBy({
+      top: elemHeight * 2, // Scroll down by 2 times the element height
+      left: 0,
+      behavior: 'smooth', // Smooth scrolling
+    });
 
     totalPages = Math.ceil(totalHits / itemsPerPage);
 
@@ -123,5 +126,7 @@ refs.btnLoadMore.addEventListener('click', async () => {
     });
 
     console.log(error.message);
+  } finally {
+    hideLoader();
   }
 });
