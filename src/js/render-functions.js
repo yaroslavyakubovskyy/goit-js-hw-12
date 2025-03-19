@@ -1,6 +1,6 @@
 import SimpleLightbox from 'simplelightbox';
 
-export const createGalleryCardTemplate = ({
+const createGalleryCardTemplate = ({
   largeImageURL,
   webformatURL,
   tags,
@@ -35,6 +35,9 @@ export const createGalleryCardTemplate = ({
       </div>
     `;
 };
+
+export const galleryCardsTemplate = items =>
+  items.map(item => createGalleryCardTemplate(item)).join('');
 
 export const createLightBox = function () {
   const lightbox = new SimpleLightbox('.gallery a', {

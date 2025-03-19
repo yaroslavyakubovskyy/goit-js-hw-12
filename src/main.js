@@ -1,16 +1,19 @@
 import iziToast from 'izitoast';
 
-import {
-  createGalleryCardTemplate,
-  createLightBox,
-} from './js/render-functions';
+import { galleryCardsTemplate, createLightBox } from './js/render-functions';
 import { fetchPhotosByQuery } from './js/pixabay-api';
 
 const refs = {
   searchForm: document.querySelector('.form'),
   gallery: document.querySelector('.js-gallery'),
   loader: document.querySelector('.loader'),
+  btnLoadMore: document.querySelector('.btn-load-more'),
 };
+
+const itemsPerPage = 15;
+let totalPages;
+let currentPage;
+let q;
 
 refs.loader.style.display = 'none';
 
@@ -22,48 +25,103 @@ function hideLoader() {
   refs.loader.style.display = 'none';
 }
 
-const onSearchFormSubmit = event => {
-  event.preventDefault();
-  showLoader();
+const onSearchFormSubmit = async event => {
+  try {
+    event.preventDefault();
 
-  const q = event.currentTarget.elements.search_text.value.trim();
+    currentPage = 1;
+    refs.gallery.innerHTML = '';
+    showLoader();
 
-  if (q === '') {
-    iziToast.error({
-      title: 'Error',
-      message: 'Input cannot be empty!',
-      color: '#ff0000',
-    });
-    return;
-  }
+    q = event.currentTarget.elements.search_text.value.trim();
 
-  fetchPhotosByQuery(q)
-    .then(({ data }) => {
-      if (data.hits.length === 0) {
-        iziToast.error({
-          title: 'Error',
-          message: `Sorry, there are no images matching your search query. Please try again!`,
-          position: 'topRight',
-        });
+    if (q === '') {
+      iziToast.error;
+      iziToast.error({
+        title: 'Error',
+        message: `Input cannot be empty!`,
+        position: 'topRight',
+      });
 
-        refs.searchForm.reset();
-        refs.gallery.innerHTML = '';
-
-        return;
-      }
-      const galleryCardsTemplate = data.hits
-        .map(img => createGalleryCardTemplate(img))
-        .join('');
-
-      refs.gallery.innerHTML = galleryCardsTemplate;
-      createLightBox();
-    })
-    .catch(err => {
-      iziToast.error({ title: 'Error', message: error.message });
-    })
-    .finally(() => {
       hideLoader();
+      refs.btnLoadMore.classList.remove('is-visible');
+      event.currentTarget.elements.search_text.value = '';
+
+      return;
+    }
+
+    const {
+      data: { hits: images },
+    } = await fetchPhotosByQuery(q, currentPage);
+
+    if (images.length === 0) {
+      iziToast.error({
+        title: 'Error',
+        message: `Sorry, there are no images matching your search query. Please try again!`,
+        position: 'topRight',
+      });
+
+      refs.searchForm.reset();
+      refs.btnLoadMore.classList.remove('is-visible');
+      hideLoader();
+
+      return;
+    }
+
+    refs.gallery.innerHTML = galleryCardsTemplate(images);
+    createLightBox();
+    hideLoader();
+    currentPage += 1;
+
+    refs.btnLoadMore.classList.add('is-visible');
+
+    const elemHeight = document
+      .querySelector('.gallery-wrapper')
+      .getBoundingClientRect().height;
+
+    window.scrollBy({
+      top: elemHeight * 2, // Scroll down by 2 times the element height
+      left: 0,
+      behavior: 'smooth', // Smooth scrolling
     });
+  } catch (error) {
+    iziToast.error({ title: 'Error', message: error.message });
+    hideLoader();
+  }
 };
 
 refs.searchForm.addEventListener('submit', onSearchFormSubmit);
+
+refs.btnLoadMore.addEventListener('click', async () => {
+  try {
+    const {
+      data: { totalHits, hits: images },
+    } = await fetchPhotosByQuery(q, currentPage);
+
+    hideLoader();
+    refs.gallery.insertAdjacentHTML('beforeend', galleryCardsTemplate(images));
+    createLightBox();
+
+    totalPages = Math.ceil(totalHits / itemsPerPage);
+
+    if (currentPage === totalPages) {
+      iziToast.info({
+        message: "We're sorry, but you've reached the end of search results.",
+        position: 'topRight',
+      });
+
+      refs.btnLoadMore.classList.remove('is-visible');
+      return;
+    }
+
+    currentPage += 1;
+    refs.btnLoadMore.classList.add('is-visible');
+  } catch (error) {
+    iziToast.error({
+      message: error.message,
+      position: 'topRight',
+    });
+
+    console.log(error.message);
+  }
+});
