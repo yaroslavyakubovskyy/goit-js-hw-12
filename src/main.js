@@ -86,9 +86,7 @@ const onSearchFormSubmit = async event => {
   }
 };
 
-refs.searchForm.addEventListener('submit', onSearchFormSubmit);
-
-refs.btnLoadMore.addEventListener('click', async () => {
+const onBtnLoadMoreClick = async () => {
   try {
     showLoader();
     const {
@@ -129,4 +127,7 @@ refs.btnLoadMore.addEventListener('click', async () => {
   } finally {
     hideLoader();
   }
-});
+};
+
+refs.searchForm.addEventListener('submit', onSearchFormSubmit);
+refs.btnLoadMore.addEventListener('click', onBtnLoadMoreClick);
