@@ -1,6 +1,6 @@
 import iziToast from 'izitoast';
 
-import { galleryCardsTemplate, createLightBox } from './js/render-functions';
+import { galleryCardsTemplate, lightbox } from './js/render-functions';
 import { fetchPhotosByQuery } from './js/pixabay-api';
 
 const refs = {
@@ -38,7 +38,6 @@ const onSearchFormSubmit = async event => {
     q = event.currentTarget.elements.search_text.value.trim();
 
     if (q === '') {
-      iziToast.error;
       iziToast.error({
         title: 'Error',
         message: `Input cannot be empty!`,
@@ -71,7 +70,7 @@ const onSearchFormSubmit = async event => {
     }
 
     refs.gallery.innerHTML = galleryCardsTemplate(images);
-    createLightBox();
+    lightbox.refresh();
     hideLoader();
     currentPage += 1;
 
@@ -95,7 +94,7 @@ const onBtnLoadMoreClick = async () => {
 
     // hideLoader();
     refs.gallery.insertAdjacentHTML('beforeend', galleryCardsTemplate(images));
-    createLightBox();
+    lightbox.refresh();
 
     window.scrollBy({
       top: elemHeight * 2, // Scroll down by 2 times the element height

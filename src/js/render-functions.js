@@ -1,4 +1,5 @@
 import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const createGalleryCardTemplate = ({
   largeImageURL,
@@ -39,11 +40,8 @@ const createGalleryCardTemplate = ({
 export const galleryCardsTemplate = items =>
   items.map(item => createGalleryCardTemplate(item)).join('');
 
-export const createLightBox = function () {
-  const lightbox = new SimpleLightbox('.gallery a', {
-    captions: true,
-    captionDelay: 250,
-    captionsData: 'alt',
-  });
-  lightbox.refresh();
-};
+export const lightbox = new SimpleLightbox('.gallery a', {
+  captions: true,
+  captionDelay: 250,
+  captionsData: 'alt',
+});
