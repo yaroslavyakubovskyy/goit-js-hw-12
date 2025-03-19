@@ -32,7 +32,7 @@ const onSearchFormSubmit = async event => {
 
     currentPage = 1;
     refs.gallery.innerHTML = '';
-    showLoader();
+    // showLoader();
     refs.btnLoadMore.classList.remove('is-visible');
 
     q = event.currentTarget.elements.search_text.value.trim();
@@ -44,13 +44,13 @@ const onSearchFormSubmit = async event => {
         position: 'topRight',
       });
 
-      hideLoader();
       refs.btnLoadMore.classList.remove('is-visible');
       event.currentTarget.elements.search_text.value = '';
 
       return;
     }
 
+    showLoader();
     const {
       data: { hits: images },
     } = await fetchPhotosByQuery(q, currentPage);
@@ -64,14 +64,12 @@ const onSearchFormSubmit = async event => {
 
       refs.searchForm.reset();
       refs.btnLoadMore.classList.remove('is-visible');
-      hideLoader();
 
       return;
     }
 
     refs.gallery.innerHTML = galleryCardsTemplate(images);
     lightbox.refresh();
-    hideLoader();
     currentPage += 1;
 
     refs.btnLoadMore.classList.add('is-visible');
@@ -81,6 +79,7 @@ const onSearchFormSubmit = async event => {
       .getBoundingClientRect().height;
   } catch (error) {
     iziToast.error({ title: 'Error', message: error.message });
+  } finally {
     hideLoader();
   }
 };
@@ -92,7 +91,6 @@ const onBtnLoadMoreClick = async () => {
       data: { totalHits, hits: images },
     } = await fetchPhotosByQuery(q, currentPage);
 
-    // hideLoader();
     refs.gallery.insertAdjacentHTML('beforeend', galleryCardsTemplate(images));
     lightbox.refresh();
 
