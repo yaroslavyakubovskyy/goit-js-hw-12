@@ -32,7 +32,6 @@ const onSearchFormSubmit = async event => {
 
     currentPage = 1;
     refs.gallery.innerHTML = '';
-    // showLoader();
     refs.btnLoadMore.classList.remove('is-visible');
 
     q = event.currentTarget.elements.search_text.value.trim();
